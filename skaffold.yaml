@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/jpbriend/test-devoxx:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/jpbriend/test-devoxx:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: test-devoxx
+        chartPath: charts/test-devoxx
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/jpbriend/test-devoxx'
+          image.tag: '{{.DIGEST_HEX}}'
